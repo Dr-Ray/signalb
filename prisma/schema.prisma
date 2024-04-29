@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int              @id @default(autoincrement())
+  fullname         String
+  email            String           @unique
+  phone            String?
+  password         String
+  currency         String?
+  country          String?
+  state            String?
+  city             String?
+  emailverpin      Int              @default(dbgenerated())
+  tradingplan      String           @default("Premium account Plan")
+  profilephoto     String           @default("human.png")
+  idfront          String?
+  idback           String?
+  deposit          Deposit[]
+  referers         Referal[]
+  withdrawal       Withdrawal[]
+  wallet_balance   Wallet_balance[]
+  copyTrades       CopyTraders[]
+  mininingContract Mining[]
+  refreshTokens    RefreshToken[]
+  fileUploads      Uploads[]
+  createdAt        DateTime?        @default(now())
+}
+
+model Traders {
+  id           Int          @id @default(autoincrement())
+  name         String
+  image        String
+  total_wins   Int
+  trades       Int
+  followers    Int
+  total_losses Int
+  win_percent  Decimal
+  profit_share Int
+  copytrader   CopyTraders?
+  createdAt    DateTime
+}
+
+model RefreshToken {
+  id          Int      @id @default(autoincrement())
+  hashid      String   @unique @default(uuid())
+  hashedToken String
+  userId      Int
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Deposit {
+  id           Int      @id @default(autoincrement())
+  paytype      String
+  paymethod    String   @default("Crypto")
+  status       String   @default("Pending")
+  amount       Decimal
+  payer        User     @relation(fields: [payerid], references: [id])
+  payerid      Int
+  payproof     Int?
+  addresspaidt String
+  createdAt    DateTime @default(now())
+}
+
+model Referal {
+  id         Int      @id @default(autoincrement())
+  refered_id Int
+  referer    Int
+  referer_id User     @relation(fields: [referer], references: [id])
+  createdAt  DateTime @default(now())
+}
+
+model Withdrawal {
+  id            Int      @id @default(autoincrement())
+  from_wallet   String
+  amount        String
+  to_wallet     String
+  currency      String
+  withdrawer_id Int
+  withdrawer    User     @relation(fields: [withdrawer_id], references: [id])
+  createdAt     DateTime @default(now())
+}
+
+model Wallet_balance {
+  id              Int      @id @default(autoincrement())
+  trading_profit  Decimal  @default(0.00)
+  trading_deposit Decimal  @default(0.00)
+  btc_mining      Decimal  @default(0.00)
+  eth_mining      Decimal  @default(0.00)
+  cosmos_mining   Decimal  @default(0.00)
+  dogecoin        Decimal  @default(0.00)
+  binince_coin    Decimal  @default(0.00)
+  referal_balance Decimal  @default(0.00)
+  owner_id        Int      @unique
+  owner           User     @relation(fields: [owner_id], references: [id])
+  createdAt       DateTime @default(now())
+}
+
+model CopyTraders {
+  id        Int      @id @default(autoincrement())
+  trader_id Int      @unique
+  trader    Traders  @relation(fields: [trader_id], references: [id])
+  copier_id Int
+  copier    User     @relation(fields: [copier_id], references: [id])
+  accepted  Boolean
+  Date      DateTime @default(now())
+}
+
+model Mining {
+  id         Int      @id @default(autoincrement())
+  mining_rig String
+  start      Boolean
+  stop       Boolean
+  coin       String
+  balance    Decimal
+  stopAt     DateTime @default(now())
+  status     String
+  owner_id   Int
+  owner      User     @relation(fields: [owner_id], references: [id])
+}
+
+model Uploads {
+  id          Int      @id @default(autoincrement())
+  filename    String
+  uploader_id Int
+  uploader    User     @relation(fields: [uploader_id], references: [id])
+  filepath    String
+  uploadDesc  String
+  tableRef    Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
